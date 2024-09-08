@@ -484,7 +484,7 @@ namespace HuloToys_Service.Controllers
             }
         }
         /// <summary>
-        /// Lấy ra tất cả các chuyên mục thuộc B2C
+        /// Lấy ra tất cả các chuyên mục thuộc B2C theo Id cha
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
@@ -498,8 +498,8 @@ namespace HuloToys_Service.Controllers
                 JArray objParr = null;
                 if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
-                    int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
-                    string cache_name = CacheType.ARTICLE_CATEGORY_MENU + "_" + _category_id;
+                    int _parent_id = Convert.ToInt32(objParr[0]["parent_id"]);
+                    string cache_name = CacheType.ARTICLE_CATEGORY_MENU + "_" + _parent_id;
                     string j_data = null;
                     try
                     {
@@ -518,7 +518,7 @@ namespace HuloToys_Service.Controllers
                     }
                     else
                     {
-                        group_product = await _newsBusiness.GetArticleCategoryByParentID(_category_id);
+                        group_product = await _newsBusiness.GetArticleCategoryByParentID(_parent_id);
                         if (group_product.Count > 0)
                         {
                             try
