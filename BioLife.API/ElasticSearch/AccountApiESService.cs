@@ -9,7 +9,7 @@ namespace HuloToys_Service.ElasticSearch
 {
     public class AccountApiESService : ESRepository<AccountApiESModel>
     {
-        public string index = "account_api_biolife_store";
+        //public string index = "account_api_biolife_store";
         private readonly IConfiguration configuration;
         private static string _ElasticHost;
 
@@ -28,7 +28,7 @@ namespace HuloToys_Service.ElasticSearch
                 var elasticClient = new ElasticClient(connectionSettings);
 
                 var query = elasticClient.Search<AccountESModel>(sd => sd
-                               .Index(index)
+                               .Index(configuration["Elastic:Index:AccountApi"])
                                .Query(q => q
                                    .Match(m => m.Field("username").Query(user_name)
                                )));
