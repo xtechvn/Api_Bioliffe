@@ -2,6 +2,8 @@
 using HuloToys_Service.Controllers.News.Business;
 using HuloToys_Service.Models.APIRequest;
 using HuloToys_Service.Models.Article;
+using HuloToys_Service.Models.ElasticSearch;
+using HuloToys_Service.Models.Products;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Utilities.Lib;
 using Microsoft.AspNetCore.Authorization;
@@ -44,17 +46,18 @@ namespace HuloToys_Service.Controllers
         public async Task<ActionResult> getListArticleByCategoryId([FromBody] APIRequestGenericModel input)
         {
             try
-            {
-                //string j_param = "{'category_id':1}";
-                //token = CommonHelper.Encode(j_param, configuration["KEY:private_key"]);
+            {                
                 JArray objParr = null;
                 if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
+                    var _category_detail = new GroupProductModel();
+                    var list_article = new List<ArticleFeModel>();
+
                     string db_type = string.Empty;
                     int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
                     string cache_name = CacheType.ARTICLE_CATEGORY_ID + _category_id;
                     var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                    var list_article = new List<ArticleFeModel>();
+                    
 
                     if (j_data != null)
                     {
@@ -67,17 +70,33 @@ namespace HuloToys_Service.Controllers
                         list_article = list_article.GroupBy(s => s.id).Select(s => s.First()).ToList();
                         if (list_article.Count() > 0)
                         {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));                            
                         }
                         db_type = "database";
                     }
-                    return Ok(new
+
+                    if (list_article != null)
                     {
-                        status = (int)ResponseType.SUCCESS,
-                        data_list = list_article,
-                        category_id = _category_id,
-                        msg = "Get " + db_type + " Successfully !!!"
-                    });
+                        // lay ra chi tiet chuyen muc
+                        _category_detail = _newsBusiness.GetById(_category_id); 
+
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.SUCCESS,
+                            data = list_article,
+                            category_id = _category_id,
+                            category_detail = _category_detail,
+                            msg = "Get " + db_type + " Successfully !!!"
+                        });
+                    }
+                    else
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.EMPTY,                            
+                            msg = "Get " + db_type + " empty !!!"
+                        });
+                    }
                 }
                 else
                 {
@@ -301,264 +320,275 @@ namespace HuloToys_Service.Controllers
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        [HttpPost("get-list-by-categoryid-order.json")]
-        public async Task<ActionResult> getListArticleByCategoryIdOrderByDate([FromBody] APIRequestGenericModel input)
-        {
-            try
-            {
-                JArray objParr = null;
-                string msg = "";
-                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
-                {
-                    string db_type = string.Empty;
-                    int category_id = Convert.ToInt32(objParr[0]["category_id"]);
-                    int skip = Convert.ToInt32(objParr[0]["skip"]);
-                    int take = Convert.ToInt32(objParr[0]["take"]);
-                    string cache_key = CacheType.CATEGORY_NEWS + category_id;
-                    var j_data = await _redisService.GetAsync(cache_key, Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                    List<ArticleFeModel> data_list;
-                    List<ArticleFeModel> pinned_article;
-                    List<ArticleFeModel> video_article;
-                    int total_count = -1;
-                    int total_page = 1;
-                    if (j_data == null || j_data == "")
-                    {
-                        var group_product = await _newsBusiness.GetGroupProductNameAsync(category_id);
-                        var data_100 = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, 0, 100, group_product);
-                        if (skip + take > 100)
-                        {
-                            var data = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, skip, take, group_product);
-                            data_list = data.list_article_fe;
-                            total_count = data.total_item_count;
-                            pinned_article = data.list_article_pinned;
-                            total_page = Convert.ToInt32(total_count / take);
-                            if (total_page < ((float)total_count / take))
-                            {
-                                total_page++;
-                            }
-                        }
-                        else
-                        {
-                            data_list = data_100.list_article_fe.Skip(skip == 1 ? 0 : skip).Take(take).ToList();
-                            total_count = data_100.total_item_count;
-                            pinned_article = data_100.list_article_pinned;
-                            total_page = Convert.ToInt32(total_count / take);
-                            if (total_page < ((float)total_count / take))
-                            {
-                                total_page++;
-                            }
-                        }
+        //[HttpPost("get-list-by-categoryid-order.json")]
+        //public async Task<ActionResult> getListArticleByCategoryIdOrderByDate([FromBody] APIRequestGenericModel input)
+        //{
+        //    try
+        //    {
+        //        JArray objParr = null;
+        //        string msg = "";
+        //        if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+        //        {
+        //            string db_type = string.Empty;
+        //            int category_id = Convert.ToInt32(objParr[0]["category_id"]);
+        //            int skip = Convert.ToInt32(objParr[0]["skip"]);
+        //            int take = Convert.ToInt32(objParr[0]["take"]);
+        //            string cache_key = CacheType.CATEGORY_NEWS + category_id;
+        //            var j_data = await _redisService.GetAsync(cache_key, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //            List<ArticleFeModel> data_list;
+        //            List<ArticleFeModel> pinned_article;
+        //            List<ArticleFeModel> video_article;
+        //            int total_count = -1;
+        //            int total_page = 1;
+        //            if (j_data == null || j_data == "")
+        //            {
+        //                var group_product = await _newsBusiness.GetGroupProductNameAsync(category_id);
+        //                var data_100 = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, 0, 100, group_product);
+        //                if (skip + take > 100)
+        //                {
+        //                    var data = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, skip, take, group_product);
+        //                    data_list = data.list_article_fe;
+        //                    total_count = data.total_item_count;
+        //                    pinned_article = data.list_article_pinned;
+        //                    total_page = Convert.ToInt32(total_count / take);
+        //                    if (total_page < ((float)total_count / take))
+        //                    {
+        //                        total_page++;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    data_list = data_100.list_article_fe.Skip(skip == 1 ? 0 : skip).Take(take).ToList();
+        //                    total_count = data_100.total_item_count;
+        //                    pinned_article = data_100.list_article_pinned;
+        //                    total_page = Convert.ToInt32(total_count / take);
+        //                    if (total_page < ((float)total_count / take))
+        //                    {
+        //                        total_page++;
+        //                    }
+        //                }
 
 
-                        try
-                        {
-                            _redisService.Set(cache_key, JsonConvert.SerializeObject(data_100), DateTime.Now.AddMinutes(15), Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                        }
-                        catch (Exception ex)
-                        {
-                            LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - getListArticleByCategoryIdOrderByDate: " + ex + "\n Token: " + input.token);
+        //                try
+        //                {
+        //                    _redisService.Set(cache_key, JsonConvert.SerializeObject(data_100), DateTime.Now.AddMinutes(15), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //                }
+        //                catch (Exception ex)
+        //                {
+        //                    LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - getListArticleByCategoryIdOrderByDate: " + ex + "\n Token: " + input.token);
 
-                        }
-                        return Ok(new
-                        {
-                            status = (int)ResponseType.SUCCESS,
-                            data_list = data_list,
-                            pinned = pinned_article,
-                            total_item = total_count,
-                            total_page = total_page
+        //                }
+        //                return Ok(new
+        //                {
+        //                    status = (int)ResponseType.SUCCESS,
+        //                    data_list = data_list,
+        //                    pinned = pinned_article,
+        //                    total_item = total_count,
+        //                    total_page = total_page
 
-                        });
+        //                });
 
-                        //return Content(JsonConvert.SerializeObject(data_list));
-                    }
-                    else
-                    {
-                        var group_product = await _newsBusiness.GetGroupProductNameAsync(category_id);
+        //                //return Content(JsonConvert.SerializeObject(data_list));
+        //            }
+        //            else
+        //            {
+        //                var group_product = await _newsBusiness.GetGroupProductNameAsync(category_id);
 
-                        if (skip + take > 100)
-                        {
-                            var data = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, skip, take, group_product);
-                            data_list = data.list_article_fe;
-                            total_count = data.total_item_count;
-                            pinned_article = data.list_article_pinned;
-                            total_page = Convert.ToInt32(total_count / take);
-                            if (total_page < ((float)total_count / take))
-                            {
-                                total_page++;
-                            }
-                        }
-                        else
-                        {
-                            var data_pinned = new List<ArticleFeModel>();
-                            var i = 0;
-                            var data_100 = JsonConvert.DeserializeObject<ArticleFEModelPagnition>(j_data);
-                            var data_pinned_1 = data_100.list_article_pinned.Where(s => s.position == 1).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
-                            if (data_pinned_1 != null && data_pinned_1.Count > 0)
-                            {
-                                data_pinned.AddRange(data_pinned_1);
-                            }
-                            else
-                            {
-                                var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
-                                if (data != null && data.Count > 0)
-                                {
-                                    data[0].position = 1;
-                                    data_pinned.Add(data[0]);
-                                    i++;
-                                }
-                            }
-                            var data_pinned_2 = data_100.list_article_pinned.Where(s => s.position == 2).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
-                            if (data_pinned_2 != null && data_pinned_2.Count > 0)
-                            {
-                                data_pinned.AddRange(data_pinned_2);
+        //                if (skip + take > 100)
+        //                {
+        //                    var data = await _newsBusiness.getArticleListByCategoryIdOrderByDate(category_id, skip, take, group_product);
+        //                    data_list = data.list_article_fe;
+        //                    total_count = data.total_item_count;
+        //                    pinned_article = data.list_article_pinned;
+        //                    total_page = Convert.ToInt32(total_count / take);
+        //                    if (total_page < ((float)total_count / take))
+        //                    {
+        //                        total_page++;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    var data_pinned = new List<ArticleFeModel>();
+        //                    var i = 0;
+        //                    var data_100 = JsonConvert.DeserializeObject<ArticleFEModelPagnition>(j_data);
+        //                    var data_pinned_1 = data_100.list_article_pinned.Where(s => s.position == 1).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
+        //                    if (data_pinned_1 != null && data_pinned_1.Count > 0)
+        //                    {
+        //                        data_pinned.AddRange(data_pinned_1);
+        //                    }
+        //                    else
+        //                    {
+        //                        var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
+        //                        if (data != null && data.Count > 0)
+        //                        {
+        //                            data[0].position = 1;
+        //                            data_pinned.Add(data[0]);
+        //                            i++;
+        //                        }
+        //                    }
+        //                    var data_pinned_2 = data_100.list_article_pinned.Where(s => s.position == 2).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
+        //                    if (data_pinned_2 != null && data_pinned_2.Count > 0)
+        //                    {
+        //                        data_pinned.AddRange(data_pinned_2);
 
-                            }
-                            else
-                            {
-                                var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + 1)).Take(take).ToList();
-                                if (data != null && data.Count > 0)
-                                {
-                                    data[0].position = 2;
-                                    data_pinned.Add(data[0]);
-                                    i++;
-                                }
-                            }
-                            var data_pinned_3 = data_100.list_article_pinned.Where(s => s.position == 3).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
-                            if (data_pinned_3 != null && data_pinned_3.Count > 0)
-                            {
-                                data_pinned.AddRange(data_pinned_3);
-                            }
-                            else
-                            {
-                                var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + 2)).Take(take).ToList();
-                                if (data != null && data.Count > 0)
-                                {
-                                    data[0].position = 3;
-                                    data_pinned.Add(data[0]);
-                                    i++;
-                                }
-                            }
+        //                    }
+        //                    else
+        //                    {
+        //                        var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + 1)).Take(take).ToList();
+        //                        if (data != null && data.Count > 0)
+        //                        {
+        //                            data[0].position = 2;
+        //                            data_pinned.Add(data[0]);
+        //                            i++;
+        //                        }
+        //                    }
+        //                    var data_pinned_3 = data_100.list_article_pinned.Where(s => s.position == 3).Skip(skip == 1 ? 0 : (skip - 1) * take).Take(take).ToList();
+        //                    if (data_pinned_3 != null && data_pinned_3.Count > 0)
+        //                    {
+        //                        data_pinned.AddRange(data_pinned_3);
+        //                    }
+        //                    else
+        //                    {
+        //                        var data = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + 2)).Take(take).ToList();
+        //                        if (data != null && data.Count > 0)
+        //                        {
+        //                            data[0].position = 3;
+        //                            data_pinned.Add(data[0]);
+        //                            i++;
+        //                        }
+        //                    }
 
-                            data_list = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + i)).Take(take).ToList();
-                            total_count = data_100.total_item_count;
-                            pinned_article = data_pinned;
-                            total_page = Convert.ToInt32(total_count / take);
-                            if (total_page < ((float)total_count / take))
-                            {
-                                total_page++;
-                            }
-                        }
+        //                    data_list = data_100.list_article_fe.Skip(skip == 1 ? 0 : (skip - 1) * (take + i)).Take(take).ToList();
+        //                    total_count = data_100.total_item_count;
+        //                    pinned_article = data_pinned;
+        //                    total_page = Convert.ToInt32(total_count / take);
+        //                    if (total_page < ((float)total_count / take))
+        //                    {
+        //                        total_page++;
+        //                    }
+        //                }
 
-                        return Ok(new
-                        {
-                            status = (int)ResponseType.SUCCESS,
-                            data_list = data_list,
-                            pinned = pinned_article,
-                            total_item = total_count,
-                            total_page = total_page
-                        });
-                        // return Content(JsonConvert.SerializeObject(data_list));
-                    }
+        //                return Ok(new
+        //                {
+        //                    status = (int)ResponseType.SUCCESS,
+        //                    data_list = data_list,
+        //                    pinned = pinned_article,
+        //                    total_item = total_count,
+        //                    total_page = total_page
+        //                });
+        //                // return Content(JsonConvert.SerializeObject(data_list));
+        //            }
 
-                }
-                else
-                {
-                    msg = "Key ko hop le";
-                }
-                return Ok(new
-                {
-                    status = (int)ResponseType.FAILED,
-                    msg = msg
-                });
-            }
-            catch (Exception ex)
-            {
-                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
-                return Ok(new
-                {
-                    status = (int)ResponseType.ERROR,
-                    msg = "Error on Excution.",
-                    _token = input.token
-                });
-            }
-        }
+        //        }
+        //        else
+        //        {
+        //            msg = "Key ko hop le";
+        //        }
+        //        return Ok(new
+        //        {
+        //            status = (int)ResponseType.FAILED,
+        //            msg = msg
+        //        });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+        //        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
+        //        return Ok(new
+        //        {
+        //            status = (int)ResponseType.ERROR,
+        //            msg = "Error on Excution.",
+        //            _token = input.token
+        //        });
+        //    }
+        //}
         /// <summary>
-        /// Lấy ra tất cả các chuyên mục thuộc B2C theo Id cha
+        /// Lấy ra tất cả các chuyên mục thuộc B2C
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        [HttpPost("get-category.json")]
-        public async Task<ActionResult> GetAllCategory([FromBody] APIRequestGenericModel input)
-        {
-            try
-            {
-                //string j_param = "{'confirm':1}";
-                //token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
-                JArray objParr = null;
-                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
-                {
-                    int _parent_id = Convert.ToInt32(objParr[0]["parent_id"]);
-                    string cache_name = CacheType.ARTICLE_CATEGORY_MENU + "_" + _parent_id;
-                    string j_data = null;
-                    try
-                    {
-                        j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                    }
-                    catch (Exception ex)
-                    {
+        //[HttpPost("get-category.json")]
+        //public async Task<ActionResult> GetAllCategory([FromBody] APIRequestGenericModel input)
+        //{
+        //    try
+        //    {
+        //        //string j_param = "{'confirm':1}";
+        //        //token = CommonHelper.Encode(j_param, configuration["DataBaseConfig:key_api:b2c"]);
+        //        JArray objParr = null;
+        //        if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+        //        {
+        //            int _category_id = Convert.ToInt32(objParr[0]["category_id"]);
+        //            string cache_name = CacheType.ARTICLE_CATEGORY_MENU + "_" + _category_id;
+        //            string j_data = null;
+        //            try
+        //            {
+        //                j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //            }
+        //            catch (Exception ex)
+        //            {
 
-                        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetMostViewedArticle: " + ex + "\n Token: " + input.token);
-                    }
-                    List<ArticleGroupViewModel> group_product = null;
+        //                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetMostViewedArticle: " + ex + "\n Token: " + input.token);
+        //            }
+        //            List<GroupProductModel> group_product = null;
 
-                    if (j_data != null)
-                    {
-                        group_product = JsonConvert.DeserializeObject<List<ArticleGroupViewModel>>(j_data);
-                    }
-                    else
-                    {
-                        group_product = await _newsBusiness.GetArticleCategoryByParentID(_parent_id);
-                        if (group_product.Count > 0)
-                        {
-                            try
-                            {
-                                _redisService.Set(cache_name, JsonConvert.SerializeObject(group_product), Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                            }
-                            catch (Exception ex)
-                            {
-                                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetAllCategory: " + ex + "\n Token: " + input.token);
+        //            if (j_data != null)
+        //            {
+        //                group_product = JsonConvert.DeserializeObject<List<ArticleGroupViewModel>>(j_data);
+        //            }
+        //            else
+        //            {
+        //                group_product = await _newsBusiness.GetArticleCategoryByParentID(_category_id);
+        //                if (group_product.Count > 0)
+        //                {
+        //                    try
+        //                    {
+        //                        _redisService.Set(cache_name, JsonConvert.SerializeObject(group_product), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetAllCategory: " + ex + "\n Token: " + input.token);
 
-                            }
-                        }
-                    }
+        //                    }
+        //                }
+        //            }
 
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.SUCCESS,
-                        msg = "Success",
-                        categories = group_product
-                    });
-                }
-                else
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.ERROR,
-                        msg = "Key ko hop le"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetAllCategory: " + ex + "\n Token: " + input.token);
-                return Ok(new
-                {
-                    status = (int)ResponseType.FAILED,
-                    msg = "Error: " + ex.ToString(),
-                });
-            }
-        }
+        //            if (group_product != null)
+        //            {
+        //                return Ok(new
+        //                {
+        //                    status = group_product.Count > 0 ? (int)ResponseType.SUCCESS : (int)ResponseType.EMPTY,
+        //                    msg = group_product.Count > 0  ? "success": "empty",
+        //                    categories = group_product
+        //                });
+        //            }
+        //            else
+        //            {
+        //                return Ok(new
+        //                {
+        //                    status = (int)ResponseType.EMPTY,
+        //                    msg = "group_product empty",                            
+        //                });
+        //            }
+        //        }
+        //        else
+        //        {
+        //            return Ok(new
+        //            {
+        //                status = (int)ResponseType.ERROR,
+        //                msg = "Key ko hop le"
+        //            });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "NewsController - GetAllCategory: " + ex + "\n Token: " + input.token);
+        //        return Ok(new
+        //        {
+        //            status = (int)ResponseType.FAILED,
+        //            msg = "Error: " + ex.ToString(),
+        //        });
+        //    }
+        //}
         [HttpPost("get-list-by-tag-order.json")]
         public async Task<ActionResult> getListArticleByTagsOrder([FromBody] APIRequestGenericModel input)
         {

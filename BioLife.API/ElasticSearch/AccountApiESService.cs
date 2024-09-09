@@ -28,16 +28,21 @@ namespace HuloToys_Service.ElasticSearch
                 var elasticClient = new ElasticClient(connectionSettings);
 
                 var query = elasticClient.Search<AccountESModel>(sd => sd
-                               .Index(configuration["Elastic:Index:AccountApi"])
-                               .Query(q => q
-                                   .Match(m => m.Field("username").Query(user_name)
-                               )));
+               .Index(configuration["Elastic:Index:AccountApi"])
+               .Query(q => q
+                   .Term(t => t
+                       .Field(f => f.username.Suffix("keyword")) // Use .keyword field for exact match
+                       .Value(user_name)
+                   )
+               ));
 
                 if (query.IsValid)
                 {
                     var result = query.Documents as List<AccountESModel>;
                     return result.FirstOrDefault();
                 }
+
+              
             }
             catch (Exception ex)
             {

@@ -13,7 +13,7 @@ namespace HuloToys_Service.ElasticSearch
 {
     public class GroupProductESService : ESRepository<GroupProduct>
     {
-        public string index = "group_product_biolife_store";
+        public string index = "";
         private readonly IConfiguration configuration;
         private static string _ElasticHost;
 
@@ -24,7 +24,7 @@ namespace HuloToys_Service.ElasticSearch
             index = _configuration["DataBaseConfig:Elastic:Index:GroupProduct"];
 
         }
-        public List<GroupProduct> GetListGroupProductByParentId(long parent_id)
+        public List<GroupProductModel> GetListGroupProductByParentId(long parent_id)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace HuloToys_Service.ElasticSearch
                 var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
                 var elasticClient = new ElasticClient(connectionSettings);
 
-                var query = elasticClient.Search<GroupProductESModel>(sd => sd
+                var query = elasticClient.Search<GroupProductModel>(sd => sd
                                .Index(index)
                                .Size(4000)
                           .Query(q =>
@@ -48,22 +48,22 @@ namespace HuloToys_Service.ElasticSearch
 
                 if (query.IsValid)
                 {
-                    var data = query.Documents as List<GroupProductESModel>;
-                    var result = data.Select(a => new GroupProduct
+                    var data = query.Documents as List<GroupProductModel>;
+                    var result = data.Select(a => new GroupProductModel
                     {
-                        Id = a.id,
-                        ParentId = a.parentid,
-                        PositionId = a.positionid,
-                        Name = a.name,
-                        ImagePath = a.imagepath,
-                        OrderNo = a.orderno,
-                        Path = a.path,
-                        Status = a.status,
-                        CreatedOn = a.createdon,
-                        ModifiedOn = a.modifiedon,
-                        Description = a.description,
-                        IsShowHeader = a.isshowheader,
-                        IsShowFooter = a.isshowfooter,
+                        id = a.id,
+                        parentid = a.parentid,
+                        positionid = a.positionid,
+                        name = a.name,
+                        imagepath = a.imagepath,
+                        orderno = a.orderno,
+                        path = a.path,
+                        status = a.status,
+                        createdon = a.createdon,
+                        modifiedon = a.modifiedon,
+                        description = a.description,
+                        isshowheader = a.isshowheader,
+                        isshowfooter = a.isshowfooter,
 
                     }).ToList();
                     return result;
@@ -76,7 +76,7 @@ namespace HuloToys_Service.ElasticSearch
             }
             return null;
         }
-        public GroupProduct GetDetailGroupProductById(long id)
+        public GroupProductModel GetDetailGroupProductById(long id)
         {
             try
             {
@@ -85,7 +85,7 @@ namespace HuloToys_Service.ElasticSearch
                 var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
                 var elasticClient = new ElasticClient(connectionSettings);
 
-                var query = elasticClient.Search<GroupProductESModel>(sd => sd
+                var query = elasticClient.Search<GroupProductModel>(sd => sd
                                .Index(index)
                           .Query(q =>
                            q.Bool(
@@ -99,22 +99,22 @@ namespace HuloToys_Service.ElasticSearch
 
                 if (query.IsValid)
                 {
-                    var data = query.Documents as List<GroupProductESModel>;
-                    var result = data.Select(a => new GroupProduct
+                    var data = query.Documents as List<GroupProductModel>;
+                    var result = data.Select(a => new GroupProductModel
                     {
-                        Id = a.id,
-                        ParentId = a.parentid,
-                        PositionId = a.positionid,
-                        Name = a.name,
-                        ImagePath = a.imagepath,
-                        OrderNo = a.orderno,
-                        Path = a.path,
-                        Status = a.status,
-                        CreatedOn = a.createdon,
-                        ModifiedOn = a.modifiedon,
-                        Description = a.description,
-                        IsShowHeader = a.isshowheader,
-                        IsShowFooter = a.isshowfooter,
+                        id = a.id,
+                        parentid = a.parentid,
+                        positionid = a.positionid,
+                        name = a.name,
+                        imagepath = a.imagepath,
+                        orderno = a.orderno,
+                        path = a.path,
+                        status = a.status,
+                        createdon = a.createdon,
+                        modifiedon = a.modifiedon,
+                        description = a.description,
+                        isshowheader = a.isshowheader,
+                        isshowfooter = a.isshowfooter,
 
                     }).ToList();
                     return result.FirstOrDefault();

@@ -1,6 +1,6 @@
 ﻿namespace HuloToys_Service.Models.ElasticSearch
 {
-    public partial class GroupProductESModel
+    public partial class GroupProductModel
     {
         public int id { get; set; }
 
