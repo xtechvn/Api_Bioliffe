@@ -7,7 +7,7 @@
         public int parentid { get; set; }
 
         public int? positionid { get; set; }
-
+         
         public string name { get; set; } = null!;
 
         public string? imagepath { get; set; }
@@ -28,5 +28,7 @@
         public bool isshowheader { get; set; }
 
         public bool isshowfooter { get; set; }
+
+        public List<GroupProductModel> group_product_child { get; set; }
     }
 }

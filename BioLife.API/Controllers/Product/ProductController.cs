@@ -1,7 +1,9 @@
 ﻿using Entities.ViewModels.Products;
 using HuloToys_Front_End.Models.Products;
+using HuloToys_Service.Controllers.News.Business;
 using HuloToys_Service.ElasticSearch;
 using HuloToys_Service.Models.APIRequest;
+using HuloToys_Service.Models.ElasticSearch;
 using HuloToys_Service.MongoDb;
 using HuloToys_Service.RedisWorker;
 using Microsoft.AspNetCore.Authorization;
@@ -35,7 +37,7 @@ namespace WEB.CMS.Controllers
             _redisService.Connect();
         }
 
-        [HttpPost("get-list")]
+        [HttpPost("get-list.json")]
         public async Task<IActionResult> ProductListing([FromBody] APIRequestGenericModel input)
         {
             try
@@ -154,6 +156,7 @@ namespace WEB.CMS.Controllers
                 msg = "Failed",
             });
         }
+
         [HttpPost("group-product")]
         public async Task<IActionResult> GroupProduct([FromBody] APIRequestGenericModel input)
         {
@@ -192,7 +195,9 @@ namespace WEB.CMS.Controllers
                 msg = ResponseMessages.DataInvalid,
             });
         }
-      
+
+       
+
     }
 
 }

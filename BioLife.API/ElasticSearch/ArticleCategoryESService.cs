@@ -7,11 +7,12 @@ using System.Reflection;
 
 namespace HuloToys_Service.ElasticSearch
 {
-    public class ArticleCategoryESService : ESRepository<ArticleCategoryViewModel>
+    public class ArticleCategoryESService : ESRepository<CategoryArticleModel>
     {
         public string index = "article_category_biolife_store";
         private readonly IConfiguration configuration;
         private static string _ElasticHost;
+        private static ElasticClient elasticClient;
 
         public ArticleCategoryESService(string Host, IConfiguration _configuration) : base(Host, _configuration)
         {
@@ -20,113 +21,73 @@ namespace HuloToys_Service.ElasticSearch
             index = _configuration["DataBaseConfig:Elastic:Index:ArticleCategory"];
 
         }
-        public List<ArticleCategoryViewModel> GetByArticleId(long id)
+
+        /// <summary>
+        /// batchSize: kích thước mỗi lô
+        /// size: tổng số bản ghi tối đa cần lấy
+        /// </summary>
+        /// <param name="category_id"></param>
+        /// <param name="batchSize"></param>
+        /// <returns></returns>
+        public List<ArticleIdCategoryModel?> GetArticleIdByCategoryId(long category_id, int size, int batchSize = 1000 )
         {
             try
             {
-                var nodes = new Uri[] { new Uri(_ElasticHost) };
-                var connectionPool = new StaticConnectionPool(nodes);
-                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
-                var elasticClient = new ElasticClient(connectionSettings);
-
-                var query = elasticClient.Search<ArticleCategoryESModel>(sd => sd
-                               .Index(index)
-                               .Size(4000)
-                               .Query(q => q
-                                   .Match(m => m.Field("articleid").Query(id.ToString())
-                               )));
-
-                if (query.IsValid)
+                int _top = 0;
+                if (elasticClient == null)
                 {
-                    var data = query.Documents as List<ArticleCategoryESModel>;
-                    var result = data.Select(a => new ArticleCategoryViewModel
-                    {
+                    var nodes = new Uri[] { new Uri(_ElasticHost) };
+                    var connectionPool = new SniffingConnectionPool(nodes); // Sử dụng Sniffing để khám phá nút khác trong cụm
+                    var connectionSettings = new ConnectionSettings(connectionPool)
+                        .RequestTimeout(TimeSpan.FromMinutes(2))  // Tăng thời gian chờ nếu cần
+                        .SniffOnStartup(true)                     // Khám phá các nút khi khởi động
+                        .SniffOnConnectionFault(true)             // Khám phá lại các nút khi có lỗi kết nối
+                        .EnableHttpCompression();                 // Bật nén HTTP để truyền tải nhanh hơn
 
-                        Id = a.id,
-                        ArticleId = a.articleid,
-                        CategoryId = a.categoryid,
+                    elasticClient = new ElasticClient(connectionSettings);
 
-
-                    }).ToList();
-                    return result;
                 }
-            }
-            catch (Exception ex)
-            {
-                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
-            }
-            return null;
-        }
-        public List<ArticleCategoryViewModel> GetListArticleCategory()
-        {
-            try
-            {
-                var nodes = new Uri[] { new Uri(_ElasticHost) };
-                var connectionPool = new StaticConnectionPool(nodes);
-                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
-                var elasticClient = new ElasticClient(connectionSettings);
 
-                var query = elasticClient.Search<ArticleCategoryESModel>(sd => sd
-                               .Index(index)
-                               .Size(4000)
-                               .Query(q => q.MatchAll()
-                               ));
+                var lst_article_id = new List<ArticleIdCategoryModel>();
+                // Khởi tạo truy vấn đầu tiên với từ khóa và điều kiện lọc
 
-                if (query.IsValid)
+                var search_response = elasticClient.Search<ArticleIdCategoryModel>(s => s
+                    .Index(index)       // Chỉ mục cần tìm kiếm
+                    .Size(batchSize)         // Kích thước mỗi lô
+                    .Scroll("2m")            // Phiên scroll có thời hạn 2 phút
+                     .Query(q => q
+                         .Term(t => t.Field("categoryid").Value(category_id))  // Tìm kiếm theo giá trị id (dạng int)
+                    )
+                );
+                // Lưu kết quả ban đầu
+                if (search_response.IsValid && search_response.Documents.Any())
                 {
-                    var data = query.Documents as List<ArticleCategoryESModel>;
-                    var result = data.Select(a => new ArticleCategoryViewModel
-                    {
-
-                        Id = a.id,
-                        ArticleId = a.articleid,
-                        CategoryId = a.categoryid,
-
-
-                    }).ToList();
-                    return result;
+                    lst_article_id.AddRange(search_response.Documents);
                 }
-            }
-            catch (Exception ex)
-            {
-                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
-            }
-            return null;
-        }
-        public List<ArticleCategoryViewModel> GetByCategoryId(long CategoryId)
-        {
-            try
-            {
-                var nodes = new Uri[] { new Uri(_ElasticHost) };
-                var connectionPool = new StaticConnectionPool(nodes);
-                var connectionSettings = new ConnectionSettings(connectionPool).DisableDirectStreaming().DefaultIndex("people");
-                var elasticClient = new ElasticClient(connectionSettings);
 
-                var query = elasticClient.Search<ArticleCategoryESModel>(sd => sd
-                               .Index(index)
-                               .Size(4000)
-                               .Query(q => q
-                                   .Match(m => m.Field("categoryid").Query(CategoryId.ToString())
-                               )));
+                var scrollId = search_response.ScrollId;
 
-                if (query.IsValid)
-                {
+                // Tiếp tục cuộn cho đến khi không còn kết quả
+                while (search_response.Documents.Any() && _top < size)
+                {                    
+                    lst_article_id.AddRange(search_response.Documents);
+                    _top += search_response.Documents.Count;
 
-                    var data = query.Documents as List<ArticleCategoryESModel>;
-                    var result = data.Select(a => new ArticleCategoryViewModel
+                    if (_top >= size)
                     {
-
-                        Id = a.id,
-                        ArticleId = a.articleid,
-                        CategoryId = a.categoryid,
-
-
-                    }).ToList();
-                    return result;
+                        lst_article_id = lst_article_id.Take(size).ToList();  // Dừng lại và lấy đúng 10 bản ghi
+                        break;
+                    }
+                    // Lấy thêm lô tiếp theo
+                    search_response = elasticClient.Scroll<ArticleIdCategoryModel>("2m", search_response.ScrollId);
                 }
+
+                // Dọn dẹp scroll ID
+                elasticClient.ClearScroll(c => c.ScrollId(scrollId));
+
+                return lst_article_id;
             }
+
             catch (Exception ex)
             {
                 string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;

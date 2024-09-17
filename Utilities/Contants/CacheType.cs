@@ -11,7 +11,7 @@
         public const string CATEGORY_TAG = "CATEGORY_TAG_";
         public const string ARTICLE_ID = "ARTICLE_";
         public const string ARTICLE_MOST_VIEWED = "ARTICLE_MOST_VIEWED";
-        public const string ARTICLE_CATEGORY_MENU = "ARTICLE_CATEGORY_MENU";
+        public const string ARTICLE_CATEGORY_MENU = "ARTICLE_CATEGORY_MENU_";
         public const string ARTICLE_FOOTER_MENU = "ARTICLE_FOOTER_MENU";
 
         public const string PRODUCT_LISTING = "PRODUCT_LISTING_";
@@ -19,6 +19,8 @@
         public const string ORDER_DETAIL_FE = "ORDER_DETAIL_FE_";
 
         public const string ADDRESS_CLIENT = "ADDRESS_CLIENT_";
+        public const string TOP_STORY = "TOP_STORY";
+
 
     }
 }

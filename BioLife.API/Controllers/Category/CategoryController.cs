@@ -1,6 +1,8 @@
 ﻿using HuloToys_Service.Controllers.News.Business;
 using HuloToys_Service.Models.APIRequest;
 using HuloToys_Service.Models.Article;
+using HuloToys_Service.Models.ElasticSearch;
+using HuloToys_Service.Models.Products;
 using HuloToys_Service.RedisWorker;
 using HuloToys_Service.Utilities.Lib;
 using Microsoft.AspNetCore.Authorization;
@@ -45,25 +47,33 @@ namespace HuloToys_Service.Controllers.Category
             try
             {
                 JArray objParr = null;
-                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+                if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
-                    int parent_id = Convert.ToInt32(objParr[0]["parent_id"]);
+                    int parent_id =  Convert.ToInt32(objParr[0]["parent_id"]);
+                    string cache_name = CacheType.ARTICLE_CATEGORY_MENU + parent_id;
+                    var group_product = new List<GroupProductModel>();
 
-                    var group_product = await _newsBusiness.GetArticleCategoryByParentID(parent_id);
-                    if(group_product!=null)
+                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    if (j_data != null)
                     {
-                        return Ok(new
-                        {
-                            status = group_product.Count > 0 ? (int)ResponseType.SUCCESS : (int)ResponseType.EMPTY,
-                            data = group_product
-                        });
+                        group_product = JsonConvert.DeserializeObject<List<GroupProductModel>>(j_data);
                     }
+                    else
+                    {
+                        group_product = await _newsBusiness.GetArticleCategoryByParentID(parent_id);
+
+                        if (group_product.Count() > 0)
+                        {
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(group_product), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                        }
+                    }
+
+
                     return Ok(new
                     {
-                        status = (int)ResponseType.EMPTY,
-                        msg = "category child empty"
+                        status = group_product.Count > 0 ? (int)ResponseType.SUCCESS : (int)ResponseType.EMPTY,
+                        data = group_product
                     });
-
                 }
                 else
                 {

@@ -1,11 +1,10 @@
+F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.dll
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\appsettings.Development.json
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\appsettings.json
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\databank.json
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.exe
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.deps.json
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.runtimeconfig.json
-F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.dll
-F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.pdb
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\AWSSDK.Core.dll
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\AWSSDK.SecurityToken.dll
 F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\Azure.Core.dll
@@ -94,9 +93,10 @@ F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.pack.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.build.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.development.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\scopedcss\bundle\BioLife.API.styles.css
-F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.csproj.CopyComplete
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.dll
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\refint\BioLife.API.dll
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.pdb
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.genruntimeconfig.cache
+F:\PROJECT\BIOLIFE\BioLife.API\bin\Debug\net7.0\BioLife.API.pdb
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\ref\BioLife.API.dll
+F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.csproj.CopyComplete
