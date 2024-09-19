@@ -1,10 +1,14 @@
-﻿using Entities.ViewModels.Products;
+﻿using BioLife.API.Utilities.lib;
+using Entities.ViewModels.Products;
 using HuloToys_Front_End.Models.Products;
 using HuloToys_Service.Utilities.constants.Product;
 using HuloToys_Service.Utilities.Lib;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using Nest;
 using Newtonsoft.Json;
 using System.Reflection;
+using Utilities;
 
 namespace HuloToys_Service.MongoDb
 {
@@ -181,7 +185,75 @@ namespace HuloToys_Service.MongoDb
                 return null;
             }
         }
+        public async Task<ProductListResponseModel> ListingByBrand(string brand_name,string keyword="", int group_product_id=-1,int page_index=1,int page_size=12)
+        {
+            try
+            {
+                var filter = Builders<ProductMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+                if(keyword!=null && keyword.Trim() != "")
+                {
+                    string regex_keyword_pattern = keyword;
+                    var keyword_split = keyword.Split(" ");
+                    if (keyword_split.Length > 0)
+                    {
+                        regex_keyword_pattern = "";
 
+                        foreach (var word in keyword_split)
+                        {
+                            string w = word.Trim();
+                            if (StringHelper.HasSpecialCharacterExceptVietnameseCharacter(word))
+                            {
+                                w = StringHelper.RemoveSpecialCharacterExceptVietnameseCharacter(word);
+                            }
+                            regex_keyword_pattern += "(?=.*" + w + ".*)";
+
+                        }
+                    }
+                    regex_keyword_pattern = "^" + regex_keyword_pattern + ".*$";
+                    var regex = new BsonRegularExpression(regex_keyword_pattern.Trim().ToLower(), "i");
+
+                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.Or(
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, regex), // Case-insensitive regex
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.sku, regex), // Case-insensitive regex
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.code, regex)  // Case-insensitive regex
+                    );
+                }
+              
+
+                if (group_product_id > 0)
+                {
+                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.group_product_id, group_product_id.ToString());
+                }
+                if (brand_name != null && brand_name.Trim()!="")
+                {
+                    var filter_specification = Builders<ProductSpecificationDetailMongoDbModel>.Filter.Empty;
+                    filter_specification &= Builders<ProductSpecificationDetailMongoDbModel>.Filter.Eq(y => y.attribute_id, 1);
+                    filter_specification &= Builders<ProductSpecificationDetailMongoDbModel>.Filter.Eq(y => y.value, brand_name.Trim());
+
+                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.ElemMatch(x => x.specification, filter_specification);
+                }
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id, "");
+                var sort_filter = Builders<ProductMongoDbModel>.Sort;
+                var sort_filter_definition = sort_filter.Descending(x => x.updated_last);
+                var model = _productDetailCollection.Find(filterDefinition);
+                long count = await model.CountDocumentsAsync();
+                model.Options.Skip = page_index < 1 ? 0 : (page_index - 1) * page_size;
+                model.Options.Limit = page_size;
+                var result = await model.ToListAsync();
+                return new ProductListResponseModel()
+                {
+                    items = result,
+                    count = count
+                };
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(_configuration["telegram:log_try_catch:bot_token"], _configuration["telegram:log_try_catch:group_id"], error_msg);
+                return null;
+            }
+        }
         public async Task<string> DeactiveByParentId(string id)
         {
             try
