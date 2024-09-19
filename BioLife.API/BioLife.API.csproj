@@ -38,6 +38,7 @@
 
   <ItemGroup>
     <Folder Include="Controllers\Client\Business\" />
+    <Folder Include="Controllers\Product\Business\" />
   </ItemGroup>
 
 </Project>

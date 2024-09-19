@@ -21,6 +21,8 @@
         public const string ADDRESS_CLIENT = "ADDRESS_CLIENT_";
         public const string TOP_STORY = "TOP_STORY";
 
+        public const string PRODUCT_BRAND = "PRODUCT_BRAND";
+        public const string PRODUCT_BY_BRAND = "PRODUCT_BY_BRAND_";
 
     }
 }

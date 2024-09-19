@@ -18,7 +18,7 @@ namespace HuloToys_Service.MongoDb
             _configuration = configuration;
             string url = "mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "";
             var client = new MongoClient("mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "");
-            IMongoDatabase db = client.GetDatabase(configuration["DataBaseConfig:MongoServer:catalog"]);
+            IMongoDatabase db = client.GetDatabase(configuration["DataBaseConfig:MongoServer:catalog_core"]);
             _product_specification_collection = db.GetCollection<ProductSpecificationMongoDbModel>("ProductSpecification");
         }
         public async Task<string> AddNewAsync(ProductSpecificationMongoDbModel model)
@@ -54,7 +54,23 @@ namespace HuloToys_Service.MongoDb
             }
         }
 
-
+        public async Task<List<ProductSpecificationMongoDbModel>> GetByType(int type)
+        {
+            try
+            {
+                var filter = Builders<ProductSpecificationMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+                filterDefinition &= Builders<ProductSpecificationMongoDbModel>.Filter.Eq(x => x.attribute_type, type); ;
+                var model = await _product_specification_collection.Find(filterDefinition).ToListAsync();
+                return model;
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(_configuration["telegram:log_try_catch:bot_token"], _configuration["telegram:log_try_catch:group_id"], error_msg);
+                return null;
+            }
+        }
         public async Task<ProductSpecificationMongoDbModel> GetByID(string id)
         {
             try
@@ -90,7 +106,7 @@ namespace HuloToys_Service.MongoDb
                 return null;
             }
         }
-
+       
         public async Task<List<ProductSpecificationMongoDbModel>> Listing(int type, string name)
         {
             try
