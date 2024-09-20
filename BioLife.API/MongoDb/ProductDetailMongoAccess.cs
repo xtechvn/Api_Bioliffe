@@ -8,6 +8,7 @@ using MongoDB.Driver;
 using Nest;
 using Newtonsoft.Json;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Utilities;
 
 namespace HuloToys_Service.MongoDb
@@ -233,6 +234,52 @@ namespace HuloToys_Service.MongoDb
 
                     filterDefinition &= Builders<ProductMongoDbModel>.Filter.ElemMatch(x => x.specification, filter_specification);
                 }
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id, "");
+                var sort_filter = Builders<ProductMongoDbModel>.Sort;
+                var sort_filter_definition = sort_filter.Descending(x => x.updated_last);
+                var model = _productDetailCollection.Find(filterDefinition);
+                long count = await model.CountDocumentsAsync();
+                model.Options.Skip = page_index < 1 ? 0 : (page_index - 1) * page_size;
+                model.Options.Limit = page_size;
+                var result = await model.ToListAsync();
+                return new ProductListResponseModel()
+                {
+                    items = result,
+                    count = count
+                };
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(_configuration["telegram:log_try_catch:bot_token"], _configuration["telegram:log_try_catch:group_id"], error_msg);
+                return null;
+            }
+        } 
+        
+        public async Task<ProductListResponseModel> ListingByPriceRange(double amount_min,double amout_max,string keyword="", int group_product_id=-1,int page_index=1,int page_size=12)
+        {
+            try
+            {
+                var filter = Builders<ProductMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+                if (group_product_id > 0)
+                {
+                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.group_product_id, group_product_id.ToString());
+                }
+                var priceFilter = Builders<ProductMongoDbModel>.Filter.And(
+                     Builders<ProductMongoDbModel>.Filter.Gt(p => p.price, 0),              // Price greater than 0
+                     Builders<ProductMongoDbModel>.Filter.Gte(p => p.price, amount_min),      // Price greater than or equal to minPrice
+                     Builders<ProductMongoDbModel>.Filter.Lte(p => p.price, amout_max)       // Price less than or equal to maxPrice
+                );
+
+                // Condition 2: Amount > 0 and Price is within the range
+                var amountFilter = Builders<ProductMongoDbModel>.Filter.And(
+                    Builders<ProductMongoDbModel>.Filter.Gt(p => p.amount_min, 0),             // Amount greater than 0
+                    Builders<ProductMongoDbModel>.Filter.Gte(p => p.amount_min, amount_min),      // Price greater than or equal to minPrice
+                    Builders<ProductMongoDbModel>.Filter.Lte(p => p.amount_min, amout_max)       // Price less than or equal to maxPrice
+                );
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Or(priceFilter, amountFilter);
+
                 filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id, "");
                 var sort_filter = Builders<ProductMongoDbModel>.Sort;
                 var sort_filter_definition = sort_filter.Descending(x => x.updated_last);

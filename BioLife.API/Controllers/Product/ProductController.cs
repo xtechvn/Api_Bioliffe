@@ -290,25 +290,25 @@ namespace WEB.CMS.Controllers
                             msg = ResponseMessages.DataInvalid
                         });
                     }
-                    //var cache_name = CacheType.PRODUCT_BY_BRAND+request.brand_id + request.group_product_id+request.page_index+request.page_size;
-                    //try
-                    //{
-                    //    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
-                    //    if (j_data != null && j_data.Trim() != "")
-                    //    {
-                    //        ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
-                    //        if (result != null)
-                    //        {
-                    //            return Ok(new
-                    //            {
-                    //                status = (int)ResponseType.SUCCESS,
-                    //                msg = ResponseMessages.Success,
-                    //                data = result
-                    //            });
-                    //        }
-                    //    }
-                    //}
-                    //catch { }
+                    var cache_name = CacheType.PRODUCT_BY_BRAND + request.brand_id + request.group_product_id + request.page_index + request.page_size;
+                    try
+                    {
+                        var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                        if (j_data != null && j_data.Trim() != "")
+                        {
+                            ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
+                            if (result != null)
+                            {
+                                return Ok(new
+                                {
+                                    status = (int)ResponseType.SUCCESS,
+                                    msg = ResponseMessages.Success,
+                                    data = result
+                                });
+                            }
+                        }
+                    }
+                    catch { }
                     string brand_name = "";
                     if (request.brand_id != null && request.brand_id.Trim() != "")
                     {
@@ -328,15 +328,15 @@ namespace WEB.CMS.Controllers
                       
                     }
                     var data = await _productDetailMongoAccess.ListingByBrand(brand_name,"", request.group_product_id,request.page_index,request.page_size);
-                    //try
-                    //{
-                    //    if (data != null && data.items!=null && data.items.Count > 0)
-                    //    {
-                    //        _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
-                    //    }
-                    //}
-                    //catch { }
-                   
+                    try
+                    {
+                        if (data != null && data.items != null && data.items.Count > 0)
+                        {
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                        }
+                    }
+                    catch { }
+
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
@@ -357,7 +357,85 @@ namespace WEB.CMS.Controllers
                 msg = ResponseMessages.DataInvalid,
             });
         }
+        [HttpPost("product-by-pricerange.json")]
+        public async Task<IActionResult> ProductByPriceRange([FromBody] APIRequestGenericModel input)
+        {
+            try
+            {
+                //input.token = CommonHelper.Encode(
 
+                //    JsonConvert.SerializeObject(new ProductBrandRequestModel()
+                //    {
+                //        amount_min= 140000,
+                //        amount_max=170000,
+                //        group_product_id = 54,
+                //        page_index = 1,
+                //        page_size = 2
+                //    })
+                //, _configuration["KEY:private_key"]);
+
+                JArray objParr = null;
+                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
+                {
+                    var request = JsonConvert.DeserializeObject<ProductBrandRequestModel>(objParr[0].ToString());
+                    if (request == null ||request.amount_min < 0 ||request.amount_max <= 0 || request.amount_max <= request.amount_min)
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = ResponseMessages.DataInvalid
+                        });
+                    }
+                    var cache_name = CacheType.PRODUCT_BY_PRICERANGE + request.amount_min+ request.amount_max + request.group_product_id + request.page_index + request.page_size;
+                    try
+                    {
+                        var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                        if (j_data != null && j_data.Trim() != "")
+                        {
+                            ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
+                            if (result != null)
+                            {
+                                return Ok(new
+                                {
+                                    status = (int)ResponseType.SUCCESS,
+                                    msg = ResponseMessages.Success,
+                                    data = result
+                                });
+                            }
+                        }
+                    }
+                    catch { }
+                  
+                    var data = await _productDetailMongoAccess.ListingByPriceRange(request.amount_min,request.amount_max, "", request.group_product_id, request.page_index, request.page_size);
+                    try
+                    {
+                        if (data != null && data.items != null && data.items.Count > 0)
+                        {
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                        }
+                    }
+                    catch { }
+
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = ResponseMessages.Success,
+                        data = data
+                    });
+                }
+
+
+            }
+            catch
+            {
+
+            }
+            return Ok(new
+            {
+                status = (int)ResponseType.FAILED,
+                msg = ResponseMessages.DataInvalid,
+            });
+        }
     }
 
 }
