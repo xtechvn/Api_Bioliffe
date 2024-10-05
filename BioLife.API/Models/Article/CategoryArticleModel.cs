@@ -1,18 +1,42 @@
-﻿namespace HuloToys_Service.Models.Article
+﻿using Nest;
+
+namespace HuloToys_Service.Models.Article
 {
     public class CategoryArticleModel // box tin
     {
+        [PropertyName("Id")]
         public long id { get; set; }
 
-        public string title { get; set; } = null!;
+        [PropertyName("Title")]
+        public string title { get; set; }
 
-        public string lead { get; set; } = null!;
+        [PropertyName("Lead")]
+        public string lead { get; set; }
 
-        public string image169 { get; set; } = null!;
-        public string image43 { get; set; } = null!;
-        public string image11 { get; set; } = null!;
-        public DateTime publishdate { get; set; }
-        public string category_name { get; set; }
 
+
+        [PropertyName("Status")]
+        public int status { get; set; }
+
+        [PropertyName("Image169")]
+        public string image_169 { get; set; } = null!;
+
+        [PropertyName("Image43")]
+        public string image_43 { get; set; } = null!;
+
+        [PropertyName("Image11")]
+        public string image_11 { get; set; } = null!;
+
+        [PropertyName("PublishDate")]
+        public DateTime publish_date { get; set; }
+
+        [PropertyName("PageView")]
+        public int? pageview { get; set; }
+
+        [PropertyName("ListCategoryId")]
+        public string list_category_id { get; set; }
+
+        [PropertyName("ListCategoryName")]
+        public string list_category_name { get; set; }
     }
 }

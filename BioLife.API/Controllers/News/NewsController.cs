@@ -40,131 +40,134 @@ namespace HuloToys_Service.Controllers
         /// </summary>
         /// <param name="token"></param>
         /// <returns></returns>
-        [HttpPost("get-list-by-categoryid.json")]
-        public async Task<ActionResult> getListArticleByCategoryId([FromBody] APIRequestGenericModel input)
-        {
-            try
-            {
-                JArray objParr = null;
-                if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
-                {
-                    var _category_detail = new GroupProductModel();
-                    var list_article = new List<CategoryArticleModel>();
-                    int total_max_cache = 100; // số bản ghi tối đa để cache
+        //[HttpPost("get-list-by-categoryid.json")]
+        //public async Task<ActionResult> getListArticleByCategoryId([FromBody] APIRequestGenericModel input)
+        //{
+        //    try
+        //    {
+        //        JArray objParr = null;
+        //        if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+        //        {
+        //            var _category_detail = new GroupProductModel();
+        //            var list_article = new List<CategoryArticleModel>();
+        //            int total_max_cache = 100; // số bản ghi tối đa để cache
 
-                    int category_id = Convert.ToInt32(objParr[0]["category_id"]);
+        //            int category_id = Convert.ToInt32(objParr[0]["category_id"]);
 
-                    int skip =  Convert.ToInt32(objParr[0]["skip"]);
-                    int take =  Convert.ToInt32(objParr[0]["take"]);
+        //            int skip =  Convert.ToInt32(objParr[0]["skip"]);
+        //            int take =  Convert.ToInt32(objParr[0]["take"]);
+                    
+        //            string cache_name = CacheType.ARTICLE_CATEGORY_ID + category_id;
+        //            var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
 
-                    string cache_name = CacheType.ARTICLE_CATEGORY_ID + category_id;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //            // Kiểm tra có trong cache không ?
+        //            if (!string.IsNullOrEmpty(j_data))
+        //            {
+        //                list_article = JsonConvert.DeserializeObject<List<CategoryArticleModel>>(j_data);
+        //                // Nếu tổng số bản ghi muốn lấy vượt quá số bản ghi trong Redis thì vào ES lấy                        
+        //                if (take > list_article.Count())
+        //                {
+        //                    // Lấy ra trong es
+        //                    list_article = await _newsBusiness.getArticleListByCategoryId(category_id, take);
+        //                }
+        //            }
+        //            else // Không có trong cache
+        //            {
+        //                // lấy ra 100 bản ghi để đi cache. Trường hợp cần hơn sẽ vào ES lấy
+        //                list_article = await _newsBusiness.getArticleListByCategoryId(category_id, total_max_cache);
 
-                    // Kiểm tra có trong cache không ?
-                    if (!string.IsNullOrEmpty(j_data))
-                    {
-                        list_article = JsonConvert.DeserializeObject<List<CategoryArticleModel>>(j_data);
-                        // Nếu tổng số bản ghi muốn lấy vượt quá số bản ghi trong Redis thì vào ES lấy                        
-                        if (take > list_article.Count())
-                        {
-                            // Lấy ra trong es
-                            list_article = await _newsBusiness.getArticleListByCategoryId(category_id, take);
-                        }
-                    }
-                    else // Không có trong cache
-                    {
-                        // lấy ra 100 bản ghi để đi cache. Trường hợp cần hơn sẽ vào ES lấy
-                        list_article = await _newsBusiness.getArticleListByCategoryId(category_id, total_max_cache);
+        //                if (list_article.Count() > 0)
+        //                {
+        //                    _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+        //                }
+        //            }
 
-                        if (list_article.Count() > 0)
-                        {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));
-                        }
-                    }
+        //            if (list_article != null && list_article.Count() > 0)
+        //            {
+        //                // lay ra chi tiet chuyen muc
+        //                _category_detail = _newsBusiness.GetById(category_id);
 
-                    if (list_article != null && list_article.Count() > 0)
-                    {
-                        // lay ra chi tiet chuyen muc
-                        _category_detail = _newsBusiness.GetById(category_id);
-
-                        return Ok(new
-                        {
-                            status = (int)ResponseType.SUCCESS,
-                            data = list_article.ToList().Skip(skip).Take(take),                            
-                            category_detail = _category_detail
-                        }); ;
-                    }
-                    else
-                    {
-                        return Ok(new
-                        {
-                            status = (int)ResponseType.EMPTY,
-                            msg = "data empty !!!"
-                        });
-                    }
-                }
-                else
-                {
-                    return Ok(new
-                    {
-                        status = (int)ResponseType.ERROR,
-                        msg = "Key ko hop le"
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
-                return Ok(new
-                {
-                    status = (int)ResponseType.FAILED,
-                    msg = "Error: " + ex.ToString(),
-                });
-            }
-        }
+        //                return Ok(new
+        //                {
+        //                    status = (int)ResponseType.SUCCESS,
+        //                    data = list_article.ToList(),
+        //                    category_detail = _category_detail
+        //                }); ;
+        //            }
+        //            else
+        //            {
+        //                return Ok(new
+        //                {
+        //                    status = (int)ResponseType.EMPTY,
+        //                    msg = "data empty !!!"
+        //                });
+        //            }
+        //        }
+        //        else
+        //        {
+        //            return Ok(new
+        //            {
+        //                status = (int)ResponseType.ERROR,
+        //                msg = "Key ko hop le"
+        //            });
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+        //        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
+        //        return Ok(new
+        //        {
+        //            status = (int)ResponseType.FAILED,
+        //            msg = "Error: " + ex.ToString(),
+        //        });
+        //    }
+        //}
 
         /// <summary>
-        /// Lấy ra các bài viết mới nhất
+        /// Lấy ra các bài viết từ store sync sang  es_biolife_sp_get_article
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        [HttpPost("get-top-story.json")]
-        public async Task<ActionResult> getTopStory([FromBody] APIRequestGenericModel input)
+        [HttpPost("get-list-news.json")]
+        public async Task<ActionResult> getListNews([FromBody] APIRequestGenericModel input)
         {
             try
             {
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {
+                    int node_redis = Convert.ToInt32(configuration["Redis:Database:db_article"]);
                     var _category_detail = new GroupProductModel();
                     var list_article = new List<CategoryArticleModel>();
                     int total_max_cache = 100 ; // số bản ghi tối đa để cache    
-                    int skip = Convert.ToInt32(objParr[0]["skip"]);
-                    int take = Convert.ToInt32(objParr[0]["take"]);
+                    int category_id = Convert.ToInt32(objParr[0]["category_id"]);
 
-                    string cache_name = CacheType.TOP_STORY;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                    int skip = Convert.ToInt32(objParr[0]["skip"]);
+                    int top = Convert.ToInt32(objParr[0]["top"]);
+
+                    string cache_name = CacheType.ARTICLE_CATEGORY_ID + category_id;
+                    var j_data = await _redisService.GetAsync(cache_name, node_redis);
 
                     // Kiểm tra có trong cache không ?
                     if (!string.IsNullOrEmpty(j_data))
                     {
                         list_article = JsonConvert.DeserializeObject<List<CategoryArticleModel>>(j_data);
                         // Nếu tổng số bản ghi muốn lấy vượt quá số bản ghi trong Redis thì vào ES lấy                        
-                        if (take > list_article.Count())
+                        if (top > list_article.Count())
                         {
                             // Lấy ra trong es
-                            list_article = await _newsBusiness.getTopStory(total_max_cache);
+                            list_article = await _newsBusiness.getListNews(category_id, top);
                         }
                     }
                     else // Không có trong cache
                     {
                         // Lấy ra số bản ghi tối đa để cache
-                        list_article = await _newsBusiness.getTopStory(Math.Max(total_max_cache,take));
+                        list_article = await _newsBusiness.getListNews(category_id, Math.Max(total_max_cache,top));
 
                         if (list_article.Count() > 0)
                         {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), Convert.ToInt32(configuration["Redis:Database:db_common"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(list_article), node_redis);
                         }
                     }
 
@@ -173,7 +176,7 @@ namespace HuloToys_Service.Controllers
                         return Ok(new
                         {
                             status = (int)ResponseType.SUCCESS,
-                            data = list_article.ToList().Skip(skip).Take(take)
+                            data = list_article.ToList().Skip(skip).Take(top)
                         });
                     }
                     else
@@ -216,6 +219,7 @@ namespace HuloToys_Service.Controllers
         {
             try
             {
+                int node_redis = Convert.ToInt32(configuration["Redis:Database:db_article"]);
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
                 {                    
@@ -224,7 +228,7 @@ namespace HuloToys_Service.Controllers
                     long article_id = Convert.ToInt64(objParr[0]["article_id"]);                    
 
                     string cache_name = CacheType.ARTICLE_ID + article_id;
-                    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(configuration["Redis:Database:db_article"]));
+                    var j_data = await _redisService.GetAsync(cache_name, node_redis);
 
                     // Kiểm tra có trong cache không ?
                     if (!string.IsNullOrEmpty(j_data))
@@ -237,7 +241,7 @@ namespace HuloToys_Service.Controllers
 
                         if (article_detail != null)
                         {
-                            _redisService.Set(cache_name, JsonConvert.SerializeObject(article_detail), Convert.ToInt32(configuration["Redis:Database:db_article"]));
+                            _redisService.Set(cache_name, JsonConvert.SerializeObject(article_detail), node_redis);
                         }
                     }
 
@@ -258,6 +262,44 @@ namespace HuloToys_Service.Controllers
                             msg = "data empty !!!"
                         });
                     }
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.ERROR,
+                        msg = "Key ko hop le"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], error_msg);
+                return Ok(new
+                {
+                    status = (int)ResponseType.FAILED,
+                    msg = "Error: " + ex.ToString(),
+                });
+            }
+        }
+
+        [HttpPost("get-total-news.json")]
+        public async Task<ActionResult> getTotalItemNewsByCategoryId([FromBody] APIRequestGenericModel input)
+        {
+            try
+            {
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(input.token, out objParr, configuration["KEY:private_key"]))
+                {
+                    int category_id = Convert.ToInt32(objParr[0]["category_id"]);
+                    // Lấy ra trong es
+                    var total = await _newsBusiness.getTotalItemNewsByCategoryId(category_id);
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        data = total
+                    });
                 }
                 else
                 {

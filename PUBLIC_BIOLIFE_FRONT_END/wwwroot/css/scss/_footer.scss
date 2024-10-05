@@ -1,0 +1,168 @@
+.footer {
+    background: #252B37;
+    color: #FFF;
+
+    a {
+        color: #fff;
+    }
+
+    .topfooter {
+        padding: 40px 0;
+        position: relative;
+        @media (max-width:767px) {
+            padding: 20px 0;
+          
+        }
+      .title{
+        font-size: 18px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-bottom: 16px;
+      }
+      .hotline{
+            color: #539C5F;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+      }
+      .time{
+        font-size: 14px;
+        font-weight: bold;
+        margin-bottom: 30px;
+      }
+      .links{
+        font-size: 16px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        li{
+            margin-bottom: 16px;
+        }
+      }
+      .payment{
+        display: flex;
+            gap: 10px;
+            img{
+                width: 60px;
+                height: 32px;
+                object-fit: contain;
+            }
+      }
+    }
+
+    .midfooter {
+        padding: 40px 0;
+        position: relative;
+        @media (max-width:767px) {
+            padding: 20px 0;
+            border-top: 1px solid #e2e2e2;
+        }
+
+        &::before{
+            content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="2" viewBox="0 0 1200 2" fill="none"><path d="M0 1H1200" stroke="url(%23paint0_linear_276_341)" stroke-width="0.5"/><defs><linearGradient id="paint0_linear_276_341" x1="0" y1="1.5" x2="1200" y2="1.5" gradientUnits="userSpaceOnUse"><stop stop-color="%23E4F6E6" stop-opacity="0"/><stop offset="0.51" stop-color="%23E4F6E6"/><stop offset="1" stop-color="%23E4F6E6" stop-opacity="0"/></linearGradient></defs></svg>');
+            position: absolute;
+            top: -10px;
+            @media (max-width:767px) {
+                display: none;
+            }
+        }
+        .logo{
+            img{
+                width: 200px;
+                @media (max-width:767px) {
+                    width: 150px;
+                }
+            }
+        }
+        .slogan{
+            text-transform: uppercase;
+            font-size: 18px;
+            color: #D3D5D7;
+            margin-top: 8px;
+        }
+        .info{
+            color: #D3D5D7;
+            margin-top: 25px;
+            li{
+                display: flex;
+                gap: 10px;
+                margin-bottom: 8px;
+                a{
+                    text-decoration: none;
+                    display: flex;
+                    gap: 10px;
+                }
+            }
+        }
+        .social{
+            display: flex;
+            gap: 10px;
+            
+            img{
+                width: 45px;
+                height: 45px;
+                object-fit: contain;
+            }
+        }
+    }
+
+    .bottomfooter {
+        background: #1E222C;
+        font-size: 14px;
+        padding: 8px 0;
+        img{
+            margin-left: auto;
+            margin-right: 0;
+            @media (max-width:767px) {
+                margin-left: 0;
+                margin-top: 10px;
+            }
+        }
+    }
+}
+
+/* Style for scroll-top button */
+.backToTopBtn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1;
+    height: 50px;
+    width: 50px;
+    font-size: 20px;
+    border: none;
+    color: #cccccc;
+    border-radius: 100%;
+    transition: 0.5s;
+    cursor: pointer;
+    transform: rotate(-90deg);
+    background: var(--color-base);
+
+    &::after {
+        background: url('data:image/svg+xml,<svg width="7" height="14" viewBox="0 0 7 14" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.77292 7.39792L1.14792 13.0229C1.09565 13.0752 1.03361 13.1166 0.965326 13.1449C0.897042 13.1732 0.823856 13.1878 0.749947 13.1878C0.676037 13.1878 0.602851 13.1732 0.534567 13.1449C0.466284 13.1166 0.40424 13.0752 0.351978 13.0229C0.299716 12.9707 0.258259 12.9086 0.229975 12.8403C0.201691 12.772 0.187134 12.6989 0.187134 12.6249C0.187134 12.551 0.201691 12.4779 0.229975 12.4096C0.258259 12.3413 0.299716 12.2792 0.351978 12.227L5.57971 6.99995L0.351978 1.77292C0.24643 1.66737 0.187134 1.52421 0.187134 1.37495C0.187134 1.22568 0.24643 1.08253 0.351978 0.976978C0.457525 0.87143 0.600679 0.812134 0.749947 0.812134C0.899214 0.812134 1.04237 0.87143 1.14792 0.976978L6.77292 6.60198C6.82521 6.65422 6.8667 6.71626 6.89501 6.78454C6.92332 6.85283 6.93789 6.92603 6.93789 6.99995C6.93789 7.07387 6.92332 7.14706 6.89501 7.21535C6.8667 7.28364 6.82521 7.34567 6.77292 7.39792Z" fill="%23fcfcfc"/></svg>') no-repeat center;
+        content: '';
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+}
+
+
+.backToTopBtn:hover {
+    opacity: 0.8;
+}
+
+.backToTopBtn.active {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+
+    &:hover {
+        opacity: 0.8;
+    }
+}
+
+.backToTopBtn:not(.active) {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+}

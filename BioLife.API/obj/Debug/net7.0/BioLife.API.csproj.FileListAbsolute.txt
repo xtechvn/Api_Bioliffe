@@ -93,9 +93,10 @@ F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.pack.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.build.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\staticwebassets.development.json
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\scopedcss\bundle\BioLife.API.styles.css
-F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.csproj.CopyComplete
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.dll
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\refint\BioLife.API.dll
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.pdb
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.genruntimeconfig.cache
 F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\ref\BioLife.API.dll
+F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife.API.sourcelink.json
+F:\PROJECT\BIOLIFE\BioLife.API\obj\Debug\net7.0\BioLife..D5CFE5D0.Up2Date

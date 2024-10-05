@@ -8,18 +8,18 @@ namespace HuloToys_Service.Controllers.News.Business
     public partial class NewsBusiness
     {
         public IConfiguration configuration;
-        public ArticleESService articleESService;
+        public ArticleService article_service;
         
-        public ArticleCategoryESService articleCategoryESService;
+        public ArticleCategoryService articleCategoryESService;
         
         public GroupProductESService groupProductESService;
         public NewsBusiness(IConfiguration _configuration)
         {
 
             configuration = _configuration;
-            articleESService = new ArticleESService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
+            article_service = new ArticleService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
         
-            articleCategoryESService = new ArticleCategoryESService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
+            articleCategoryESService = new ArticleCategoryService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
             
             groupProductESService = new GroupProductESService(_configuration["DataBaseConfig:Elastic:Host"], _configuration);
         }
@@ -28,7 +28,7 @@ namespace HuloToys_Service.Controllers.News.Business
         {
             try
             {
-                var article_list = articleESService.GetArticleDetailById(article_id);
+                var article_list = article_service.GetArticleDetailById(article_id);
                 return article_list;
             }
             catch (Exception ex)
@@ -45,37 +45,37 @@ namespace HuloToys_Service.Controllers.News.Business
         /// </summary>
         /// <param name="cate_id"></param>
         /// <returns></returns>
-        public async Task<List<CategoryArticleModel>> getArticleListByCategoryId(int cate_id,int size)
-        {
-            var list_article = new List<CategoryArticleModel>();
-            try
-            {  
-                // Lấy ra danh sách id các bài viết theo chuyên mục
-                var List_articleCategory = articleCategoryESService.GetArticleIdByCategoryId(cate_id, size);
-                if (List_articleCategory != null && List_articleCategory.Count > 0)
-                {
-                    foreach (var item in List_articleCategory)
-                    {
-                        // Chi tiết bài viết
-                        var article = articleESService.GetArticleDetailForCategoryById((long)item.articleid);
-                        if (article == null)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            list_article.Add(article);
-                        }
-                    }                    
-                }
-                return list_article;
-            }
-            catch (Exception ex)
-            {
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "getArticleListByCategoryId - ArticleDAL: " + ex);
-                return list_article;
-            }
-        }
+        //public async Task<List<CategoryArticleModel>> getArticleListByCategoryId(int cate_id,int size)
+        //{
+        //    var list_article = new List<CategoryArticleModel>();
+        //    try
+        //    {  
+        //        // Lấy ra danh sách id các bài viết theo chuyên mục
+        //        var List_articleCategory = articleCategoryESService.GetArticleIdByCategoryId(cate_id, size);
+        //        if (List_articleCategory != null && List_articleCategory.Count > 0)
+        //        {
+        //            foreach (var item in List_articleCategory)
+        //            {
+        //                // Chi tiết bài viết
+        //                var article = articleESService.GetArticleDetailForCategoryById((long)item.articleid);
+        //                if (article == null)
+        //                {
+        //                    continue;
+        //                }
+        //                else
+        //                {
+        //                    list_article.Add(article);
+        //                }
+        //            }                    
+        //        }
+        //        return list_article;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "getArticleListByCategoryId - ArticleDAL: " + ex);
+        //        return list_article;
+        //    }
+        //}
 
 
         /// <summary>
@@ -84,13 +84,13 @@ namespace HuloToys_Service.Controllers.News.Business
         /// </summary>
         /// <param name="category_parent_id">Là id cha của các chuyên mục  tin tức</param>
         /// <returns></returns>
-        public async Task<List<CategoryArticleModel>> getTopStory(int take)
+        public async Task<List<CategoryArticleModel>> getListNews(int category_id, int take)
         {
             var list_article = new List<CategoryArticleModel>();
             try
             {
                 // Lấy ra danh sách id các bài viết mới nhất
-                var obj_top_story = articleESService.getTopStory(take);
+                var obj_top_story = article_service.getListNews( category_id,take);
 
                 return obj_top_story;
             }
@@ -177,24 +177,47 @@ namespace HuloToys_Service.Controllers.News.Business
             }
             return null;
         }
-        public async Task<List<GroupProductModel>> GetFooterCategoryByParentID(long parent_id)
+        //public async Task<List<GroupProductModel>> GetFooterCategoryByParentID(long parent_id)
+        //{
+        //    try
+        //    {
+        //        //var group = GetByParentId(parent_id);
+        //        //group = group.Where(x => x.isshowfooter == true).ToList();
+        //        //var list = new List<GroupProductModel>();
+
+        //        // list.AddRange(group.Select(x => new ArticleGroupViewModel() { id = x.Id, image_path = x.ImagePath, name = x.Name, order_no = (int)x.OrderNo, url_path = x.Path }).OrderBy(x => x.order_no).ToList());
+        //        return null;
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "GetFooterCategoryByParentID -GroupProductRepository : " + ex);
+        //    }
+        //    return null;
+        //}
+
+        /// <summary>
+        /// cuonglv
+        /// Lấy ra tổng tin theo chuyên mục
+        /// </summary>
+        /// <param name="cate_id"></param>
+        /// <returns></returns>
+        public async Task<int> getTotalItemNewsByCategoryId(int cate_id)
         {
+            var list_article = new List<CategoryArticleModel>();
             try
             {
-                //var group = GetByParentId(parent_id);
-                //group = group.Where(x => x.isshowfooter == true).ToList();
-                //var list = new List<GroupProductModel>();
-
-                // list.AddRange(group.Select(x => new ArticleGroupViewModel() { id = x.Id, image_path = x.ImagePath, name = x.Name, order_no = (int)x.OrderNo, url_path = x.Path }).OrderBy(x => x.order_no).ToList());
-                return null;
+                // Lấy ra danh sách id các bài viết theo chuyên mục
+                var total = article_service.getTotalItemNewsByCategoryId(cate_id);
+                
+                return total;
             }
             catch (Exception ex)
             {
-                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "GetFooterCategoryByParentID -GroupProductRepository : " + ex);
+                LogHelper.InsertLogTelegramByUrl(configuration["telegram:log_try_catch:bot_token"], configuration["telegram:log_try_catch:group_id"], "getArticleListByCategoryId - ArticleDAL: " + ex);
+                return 0;
             }
-            return null;
         }
-      
+
 
     }
 }

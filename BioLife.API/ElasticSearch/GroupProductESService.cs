@@ -4,6 +4,7 @@ using HuloToys_Service.Models.ElasticSearch;
 using HuloToys_Service.Models.Products;
 using HuloToys_Service.Utilities.Lib;
 using Nest;
+using System.Drawing;
 using System.Reflection;
 using Utilities.Contants;
 
@@ -124,5 +125,7 @@ namespace HuloToys_Service.ElasticSearch
             }
             return null;
         }
+
+        
     }
 }
