@@ -87,8 +87,8 @@ namespace HuloToys_Service.MongoDb
                 var model = await _productDetailCollection.Find(filterDefinition).FirstOrDefaultAsync();
                 var result = new ProductDetailResponseModel()
                 {
-                    product_main=model,
-                    product_sub=await SubListing(id)
+                    product_main = model,
+                    product_sub = await SubListing(id)
                 };
                 return result;
             }
@@ -106,7 +106,7 @@ namespace HuloToys_Service.MongoDb
             {
                 var filter = Builders<ProductMongoDbModel>.Filter;
                 var filterDefinition = filter.Empty;
-                if(keyword!=null && keyword.Trim() != "")
+                if (keyword != null && keyword.Trim() != "")
                 {
                     filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, keyword);
 
@@ -210,13 +210,13 @@ namespace HuloToys_Service.MongoDb
                 return null;
             }
         }
-        public async Task<ProductListResponseModel> ListingByBrand(string brand_name,string keyword="", int group_product_id=-1,int page_index=1,int page_size=12)
+        public async Task<ProductListResponseModel> ListingByBrand(string brand_name, string keyword = "", int group_product_id = -1, int page_index = 1, int page_size = 12)
         {
             try
             {
                 var filter = Builders<ProductMongoDbModel>.Filter;
                 var filterDefinition = filter.Empty;
-                if(keyword!=null && keyword.Trim() != "")
+                if (keyword != null && keyword.Trim() != "")
                 {
                     string regex_keyword_pattern = keyword;
                     var keyword_split = keyword.Split(" ");
@@ -244,13 +244,13 @@ namespace HuloToys_Service.MongoDb
                        Builders<ProductMongoDbModel>.Filter.Regex(x => x.code, regex)  // Case-insensitive regex
                     );
                 }
-              
+
 
                 if (group_product_id > 0)
                 {
                     filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.group_product_id, group_product_id.ToString());
                 }
-                if (brand_name != null && brand_name.Trim()!="")
+                if (brand_name != null && brand_name.Trim() != "")
                 {
                     var filter_specification = Builders<ProductSpecificationDetailMongoDbModel>.Filter.Empty;
                     filter_specification &= Builders<ProductSpecificationDetailMongoDbModel>.Filter.Eq(y => y.attribute_id, 1);
@@ -278,9 +278,9 @@ namespace HuloToys_Service.MongoDb
                 LogHelper.InsertLogTelegramByUrl(_configuration["telegram:log_try_catch:bot_token"], _configuration["telegram:log_try_catch:group_id"], error_msg);
                 return null;
             }
-        } 
-        
-        public async Task<ProductListResponseModel> ListingByPriceRange(double amount_min,double amout_max,string keyword="", int group_product_id=-1,int page_index=1,int page_size=12)
+        }
+
+        public async Task<ProductListResponseModel> ListingByPriceRange(double amount_min, double amout_max, string keyword = "", int group_product_id = -1, int page_index = 1, int page_size = 12)
         {
             try
             {
@@ -345,6 +345,30 @@ namespace HuloToys_Service.MongoDb
             return null;
 
         }
+
+        public async Task<List<ProductMongoDbModel>> searchByProductName(string keyword)
+        {
+            try
+            {
+                var filter = Builders<ProductMongoDbModel>.Filter;
+                var filterDefinition = filter.Empty;
+
+                // Use regex for case-insensitive partial match
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, new BsonRegularExpression(keyword, "i"));
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id , "");
+                var model = _productDetailCollection.Find(filterDefinition);
+                var result = await model.ToListAsync();
+
+                return result;
+            }
+            catch (Exception ex)
+            {
+                string error_msg = Assembly.GetExecutingAssembly().GetName().Name + "->" + MethodBase.GetCurrentMethod().Name + "=>" + ex.Message;
+                LogHelper.InsertLogTelegramByUrl(_configuration["telegram:log_try_catch:bot_token"], _configuration["telegram:log_try_catch:group_id"], error_msg);
+                return null;
+            }
+        }
+
 
     }
 }

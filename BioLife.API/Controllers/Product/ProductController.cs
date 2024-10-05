@@ -344,6 +344,45 @@ namespace WEB.CMS.Controllers
             }
            
         }
+
+        [HttpPost("search.json")]
+        public async Task<IActionResult> searchByProductName([FromBody] APIRequestGenericModel input)
+        {
+            try
+            {
+                JArray objParr = null;
+                if (CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
+                {
+                    string keyword =  objParr[0]["keyword"].ToString();
+
+                    var data = await _productDetailMongoAccess.searchByProductName(keyword);
+
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.SUCCESS,
+                        msg = ResponseMessages.Success,
+                        data = data
+                    });
+                }
+                else
+                {
+                    return Ok(new
+                    {
+                        status = (int)ResponseType.EMPTY
+                    });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    status = (int)ResponseType.ERROR,
+                    msg = ex.ToString(),
+                });
+            }
+
+        }
     }
 
 }
