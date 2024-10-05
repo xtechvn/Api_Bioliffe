@@ -106,6 +106,16 @@ namespace WEB.CMS.Controllers
         {
             try
             {
+                //input.token = CommonHelper.Encode(
+
+                //    JsonConvert.SerializeObject(new ProductListRequestModel()
+                //    {
+                //        group_id=0,
+                //        keyword= "số 3 800g (2Y+)",
+                //        page_index = 1,
+                //        page_size = 2
+                //    })
+                //, _configuration["KEY:private_key"]);
                 JArray objParr = null;
                 if (CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
                 {
@@ -152,6 +162,7 @@ namespace WEB.CMS.Controllers
                             total = obj_product.count
                         });
                     }
+<<<<<<< HEAD
                     else
                     {
                         return Ok(new
@@ -163,6 +174,31 @@ namespace WEB.CMS.Controllers
                 }
                 else
                 {
+=======
+                    //var cache_name = CacheType.PRODUCT_LISTING + (request.keyword ?? "") + request.group_id + request.page_index + request.page_size;
+                    //var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //if (j_data != null && j_data.Trim() != "")
+                    //{
+                    //    ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
+                    //    if (result != null && result.items != null)
+                    //    {
+                    //        return Ok(new
+                    //        {
+                    //            status = (int)ResponseType.SUCCESS,
+                    //            msg = ResponseMessages.Success,
+                    //            data = result
+                    //        });
+                    //    }
+                    //}
+                    if (request.page_size <= 0) request.page_size = 10;
+                    if (request.page_index < 1) request.page_index = 1;
+                    var data = await _productDetailMongoAccess.ResponseListing(request.keyword, request.group_id, request.page_index, request.page_size);
+                   
+                    //if (data != null  && data.items.Count > 0)
+                    //{
+                    //    _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //}
+>>>>>>> 2a3eafe89ee8930577e6b376e5f6f07a6b3cac68
                     return Ok(new
                     {
                         status = (int)ResponseType.ERROR,
@@ -191,6 +227,7 @@ namespace WEB.CMS.Controllers
                 JArray objParr = null;
                 if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
                 {
+<<<<<<< HEAD
                     string product_id = objParr[0]["product_id"].ToString();
             
                     var cache_name = CacheType.PRODUCT_DETAIL + product_id;
@@ -213,6 +250,37 @@ namespace WEB.CMS.Controllers
                     {
                         _redisService.Set(cache_name, JsonConvert.SerializeObject(data), node_redis);
                     }
+=======
+                    var request = JsonConvert.DeserializeObject<ProductDetailRequestModel>(objParr[0].ToString());
+                    if (request == null || request.id == null || request.id.Trim() == "")
+                    {
+                        return Ok(new
+                        {
+                            status = (int)ResponseType.FAILED,
+                            msg = ResponseMessages.DataInvalid
+                        });
+                    }
+                    //var cache_name = CacheType.PRODUCT_DETAIL + request.id;
+                    //var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //if (j_data != null && j_data.Trim() != "")
+                    //{
+                    //    ProductDetailResponseModel result = JsonConvert.DeserializeObject<ProductDetailResponseModel>(j_data);
+                    //    if (result != null)
+                    //    {
+                    //        return Ok(new
+                    //        {
+                    //            status = (int)ResponseType.SUCCESS,
+                    //            msg = ResponseMessages.Success,
+                    //            data = result
+                    //        });
+                    //    }
+                    //}
+                    var data = await _productDetailMongoAccess.GetFullProductById(request.id);
+                    //if (data != null)
+                    //{
+                    //    _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //}
+>>>>>>> 2a3eafe89ee8930577e6b376e5f6f07a6b3cac68
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
@@ -292,31 +360,31 @@ namespace WEB.CMS.Controllers
                             msg = ResponseMessages.DataInvalid
                         });
                     }
-                    var cache_name = CacheType.PRODUCT_BRAND;
-                    try
-                    {
-                        var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
-                        if (j_data != null && j_data.Trim() != "")
-                        {
-                            List<ProductSpecificationMongoDbModel> result = JsonConvert.DeserializeObject<List<ProductSpecificationMongoDbModel>>(j_data);
-                            if (result != null)
-                            {
-                                return Ok(new
-                                {
-                                    status = (int)ResponseType.SUCCESS,
-                                    msg = ResponseMessages.Success,
-                                    data = result
-                                });
-                            }
-                        }
-                    }
-                    catch { }
+                    //var cache_name = CacheType.PRODUCT_BRAND;
+                    //try
+                    //{
+                    //    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //    if (j_data != null && j_data.Trim() != "")
+                    //    {
+                    //        List<ProductSpecificationMongoDbModel> result = JsonConvert.DeserializeObject<List<ProductSpecificationMongoDbModel>>(j_data);
+                    //        if (result != null)
+                    //        {
+                    //            return Ok(new
+                    //            {
+                    //                status = (int)ResponseType.SUCCESS,
+                    //                msg = ResponseMessages.Success,
+                    //                data = result
+                    //            });
+                    //        }
+                    //    }
+                    //}
+                    //catch { }
 
                     var data = await _productSpecificationMongoAccess.GetByType(1);
-                    if (data != null && data.Count > 0)
-                    {
-                        _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
-                    }
+                    //if (data != null && data.Count > 0)
+                    //{
+                    //    _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //}
                     return Ok(new
                     {
                         status = (int)ResponseType.SUCCESS,
@@ -365,25 +433,25 @@ namespace WEB.CMS.Controllers
                             msg = ResponseMessages.DataInvalid
                         });
                     }
-                    var cache_name = CacheType.PRODUCT_BY_BRAND + request.brand_id + request.group_product_id + request.page_index + request.page_size;
-                    try
-                    {
-                        var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
-                        if (j_data != null && j_data.Trim() != "")
-                        {
-                            ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
-                            if (result != null)
-                            {
-                                return Ok(new
-                                {
-                                    status = (int)ResponseType.SUCCESS,
-                                    msg = ResponseMessages.Success,
-                                    data = result
-                                });
-                            }
-                        }
-                    }
-                    catch { }
+                    //var cache_name = CacheType.PRODUCT_BY_BRAND + request.brand_id + request.group_product_id + request.page_index + request.page_size;
+                    //try
+                    //{
+                    //    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //    if (j_data != null && j_data.Trim() != "")
+                    //    {
+                    //        ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
+                    //        if (result != null)
+                    //        {
+                    //            return Ok(new
+                    //            {
+                    //                status = (int)ResponseType.SUCCESS,
+                    //                msg = ResponseMessages.Success,
+                    //                data = result
+                    //            });
+                    //        }
+                    //    }
+                    //}
+                    //catch { }
                     string brand_name = "";
                     if (request.brand_id != null && request.brand_id.Trim() != "")
                     {
@@ -402,6 +470,7 @@ namespace WEB.CMS.Controllers
                         }
 
                     }
+<<<<<<< HEAD
                     var data = await _productDetailMongoAccess.ListingByBrand(brand_name, "", request.group_product_id, request.page_index, request.page_size);
                     try
                     {
@@ -411,6 +480,17 @@ namespace WEB.CMS.Controllers
                         }
                     }
                     catch { }
+=======
+                    var data = await _productDetailMongoAccess.ListingByBrand(brand_name,"", request.group_product_id,request.page_index,request.page_size);
+                    //try
+                    //{
+                    //    if (data != null && data.items != null && data.items.Count > 0)
+                    //    {
+                    //        _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //    }
+                    //}
+                    //catch { }
+>>>>>>> 2a3eafe89ee8930577e6b376e5f6f07a6b3cac68
 
                     return Ok(new
                     {
@@ -461,6 +541,7 @@ namespace WEB.CMS.Controllers
                             msg = ResponseMessages.DataInvalid
                         });
                     }
+<<<<<<< HEAD
                     var cache_name = CacheType.PRODUCT_BY_PRICERANGE + request.amount_min + request.amount_max + request.group_product_id + request.page_index + request.page_size;
                     try
                     {
@@ -490,6 +571,37 @@ namespace WEB.CMS.Controllers
                         }
                     }
                     catch { }
+=======
+                    //var cache_name = CacheType.PRODUCT_BY_PRICERANGE + request.amount_min+ request.amount_max + request.group_product_id + request.page_index + request.page_size;
+                    //try
+                    //{
+                    //    var j_data = await _redisService.GetAsync(cache_name, Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //    if (j_data != null && j_data.Trim() != "")
+                    //    {
+                    //        ProductListResponseModel result = JsonConvert.DeserializeObject<ProductListResponseModel>(j_data);
+                    //        if (result != null)
+                    //        {
+                    //            return Ok(new
+                    //            {
+                    //                status = (int)ResponseType.SUCCESS,
+                    //                msg = ResponseMessages.Success,
+                    //                data = result
+                    //            });
+                    //        }
+                    //    }
+                    //}
+                    //catch { }
+                  
+                    var data = await _productDetailMongoAccess.ListingByPriceRange(request.amount_min,request.amount_max, "", request.group_product_id, request.page_index, request.page_size);
+                    //try
+                    //{
+                    //    if (data != null && data.items != null && data.items.Count > 0)
+                    //    {
+                    //        _redisService.Set(cache_name, JsonConvert.SerializeObject(data), Convert.ToInt32(_configuration["Redis:Database:db_search_result"]));
+                    //    }
+                    //}
+                    //catch { }
+>>>>>>> 2a3eafe89ee8930577e6b376e5f6f07a6b3cac68
 
                     return Ok(new
                     {

@@ -138,9 +138,33 @@ namespace HuloToys_Service.MongoDb
                 var filterDefinition = filter.Empty;
                 if (keyword != null && keyword.Trim() != "")
                 {
-                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, keyword);
+                    string regex_keyword_pattern = keyword;
+                    var keyword_split = keyword.Split(" ");
+                    if (keyword_split.Length > 0)
+                    {
+                        regex_keyword_pattern = "";
 
+                        foreach (var word in keyword_split)
+                        {
+                            string w = word.Trim();
+                            if (StringHelper.HasSpecialCharacterExceptVietnameseCharacter(word))
+                            {
+                                w = StringHelper.RemoveSpecialCharacterExceptVietnameseCharacter(word);
+                            }
+                            regex_keyword_pattern += "(?=.*" + w + ".*)";
+
+                        }
+                    }
+                    regex_keyword_pattern = "^" + regex_keyword_pattern + ".*$";
+                    var regex = new BsonRegularExpression(regex_keyword_pattern.Trim().ToLower(), "i");
+
+                    filterDefinition &= Builders<ProductMongoDbModel>.Filter.Or(
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, regex), // Case-insensitive regex
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.sku, regex), // Case-insensitive regex
+                       Builders<ProductMongoDbModel>.Filter.Regex(x => x.code, regex)  // Case-insensitive regex
+                    );
                 }
+
                 if (group_id > 0)
                 {
                     filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.group_product_id, group_id.ToString());
