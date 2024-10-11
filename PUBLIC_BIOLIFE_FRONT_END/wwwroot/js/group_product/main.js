@@ -1,5 +1,5 @@
 
-var total_product = 8; // Tổng số sản phẩm của 1 box
+var total_product = 12; // Tổng số sản phẩm của 1 box
 var group_id_product_top = 54;// id nhóm sản phẩm box SẢN PHẨM NỔI BẬT
 
 $(document).ready(function () {
@@ -18,6 +18,7 @@ $(document).ready(function () {
     var location_type = "CATEGORY";
     group_product.render_product_list(-1, div_location_render_data, view_name, skip, take, location_type);
 
+    group_product.bind_list_product_flashSale();
 })
 $(document.body).on('click', '.menu_group_product', function (e) {
 
@@ -113,6 +114,10 @@ var group_product = {
                         1400: {
                             slidesPerView: 5,
                         }
+                    },
+                    navigation: {
+                        nextEl: '.product-slide .swiper-button-next',
+                        prevEl: '.product-slide .swiper-button-prev'
                     }
                 });
             },
@@ -286,7 +291,21 @@ var group_product = {
                 console.log("Error: " + error); // Thay đổi từ 'failure' sang 'error'
             }
         });
+    },
+    bind_list_product_flashSale: function () { // Nhóm sản phảm giảm giá
+
+        $.ajax({
+            dataType: 'html',
+            type: 'POST',
+            url: '/home/loadProductTopComponent',
+            data: { group_product_id: group_id_product_top, _page_index: 0, page_size: total_product, view_name: "~/Views/Shared/Components/Product/BoxProductSale.cshtml" },
+            success: function (data) {
+                debugger;
+                $('.box_product_sale').html(data);                
+            },
+            error: function (xhr, status, error) {
+                console.log("Error: " + error); // Thay đổi từ 'failure' sang 'error'
+            }
+        });
     }
-
-
 }

@@ -1,4 +1,9 @@
-﻿using HuloToys_Service.RabitMQ;
+﻿using HuloToys_Service.Models.APIRequest;
+using HuloToys_Service.Models.Orders;
+using HuloToys_Service.Models.Payment;
+using HuloToys_Service.MongoDb;
+using HuloToys_Service.RabitMQ;
+using HuloToys_Service.Utilities.lib;
 using HuloToys_Service.Utilities.Lib;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,12 +12,6 @@ using Newtonsoft.Json.Linq;
 using System.Reflection;
 using Utilities;
 using Utilities.Contants;
-using HuloToys_Service.Models.Orders;
-using HuloToys_Service.Utilities.lib;
-using HuloToys_Service.MongoDb;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using HuloToys_Service.Models.APIRequest;
-using HuloToys_Service.Models.Payment;
 
 namespace HuloToys_Service.Controllers
 {

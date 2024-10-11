@@ -1,8 +1,41 @@
 ﻿$(document).ready(function () {
-
-    product_detail.Initialization()
+    product_detail.Initialization();  
+    product_detail.save_product_history_local(); // product view
 })
 var product_detail = {
+    
+    save_product_history_local: function () {
+       
+        var prod_history = JSON.parse($("#product_json_detail").val());
+        debugger;
+        if (prod_history.amount_vnd != "") {
+            var list_result = [];
+            var j_list_hist = localStorage.getItem(PRODUCT_HISTORY);
+            if (j_list_hist == null) {
+                //add first list
+                list_result.push(prod_history);
+                localStorage.setItem(PRODUCT_HISTORY, JSON.stringify(list_result));
+            } else {
+                var obj_prod_hist = JSON.parse(j_list_hist);
+
+                //add pro
+                // check pro in list
+                var list_result = obj_prod_hist.filter(function (el) { return el.product_code == prod_history.product_code; });
+                if (list_result.length == 0) {
+                    if (obj_prod_hist.length > LIMIT_PRODUCT_HIST) {
+                        //remove 1 pro first
+                        obj_prod_hist.splice(obj_prod_hist.length - 1, obj_prod_hist.length);
+                    }
+                    //add first list                    
+                    obj_prod_hist.unshift(prod_history);                    
+                    //save
+                    localStorage.setItem(PRODUCT_HISTORY, JSON.stringify(obj_prod_hist));
+                } else {
+
+                }
+            }
+        }
+    },
     Initialization: function () {
 
         sessionStorage.removeItem(STORAGE_NAME.ProductDetail)
@@ -33,36 +66,7 @@ var product_detail = {
         var request = {
             "id": code
         }
-        $.when(
-            global_service.POST(API_URL.GetProductDetail, request)
-        ).done(function (result) {
-            if (result != null && result != undefined) {
-                $('.section-details-product').removeClass('placeholder')
-                $('.section-details-product').html(result)
-                var swiperSmallThumb = new Swiper(".thumb-small", {
-                    spaceBetween: 15,
-                    slidesPerView: 4,
-                    freeMode: true,
-                    watchSlidesProgress: true,
-                    navigation: {
-                        nextEl: '.thumb-small .swiper-button-next',
-                        prevEl: '.thumb-small .swiper-button-prev',
-                    },
-                });
-                var swiperBigThumb = new Swiper(".thumb-big", {
-                    spaceBetween: 15,
-                    navigation: false,
-                    thumbs: {
-                        swiper: swiperSmallThumb,
-                    },
-                });
-            }
-            else {
-                window.location.href = '/error'
-
-            }
-        })
-        $.when(
+        $.when( // click atribute
             global_service.POST(API_URL.GetProductDetail, request)
         ).done(function (result) {
             if (result.is_success && result.data && result.data.product_main) {
@@ -71,7 +75,6 @@ var product_detail = {
             }
         })
     },
-
     RenderDetail: function (product, product_sub) {
         var html = ''
         var img_src = product.avatar

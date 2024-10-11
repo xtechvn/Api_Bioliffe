@@ -1,10 +1,8 @@
 ﻿using Elasticsearch.Net;
-using HuloToys_Service.Models;
 using HuloToys_Service.Utilities.Lib;
 using Nest;
 using Newtonsoft.Json;
 using System.Reflection;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace HuloToys_Service.Elasticsearch
 {

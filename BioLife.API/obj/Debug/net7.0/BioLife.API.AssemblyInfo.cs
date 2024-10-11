@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BioLife.API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+496a4cfa56b00b15d4e0eecc26e753adb7866d42")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1dfc01581eb8ac4f2236ef75db20d8247eafe765")]
 [assembly: System.Reflection.AssemblyProductAttribute("BioLife.API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BioLife.API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

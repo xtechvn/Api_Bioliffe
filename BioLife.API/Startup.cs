@@ -3,9 +3,6 @@ using HuloToys_Service.RedisWorker;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
-using Newtonsoft.Json.Serialization;
-using Newtonsoft.Json;
 
 namespace HuloToys_Service
 {

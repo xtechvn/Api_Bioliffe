@@ -126,7 +126,7 @@ namespace WEB.CMS.Controllers
             {
                 int node_redis = Convert.ToInt32(_configuration["Redis:Database:db_search_result"]);
                 JArray objParr = null;
-                if (input != null && input.token != null && CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
+                if (CommonHelper.GetParamWithKey(input.token, out objParr, _configuration["KEY:private_key"]))
                 {
                     string product_id = objParr[0]["product_id"].ToString();
 
