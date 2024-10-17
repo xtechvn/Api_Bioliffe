@@ -94,7 +94,7 @@ namespace WEB.CMS.Controllers
                         return Ok(new
                         {
                             status = (int)ResponseType.EMPTY,
-                            msg = "data empty !!!"
+                            msg = "data empty !!! with group_product_id = " + group_product_id
                         });
                     }
                 }
@@ -103,7 +103,7 @@ namespace WEB.CMS.Controllers
                     return Ok(new
                     {
                         status = (int)ResponseType.ERROR,
-                        msg = ResponseMessages.DataInvalid,
+                        msg = ResponseMessages.DataInvalid ,
                     });
                 }
 
