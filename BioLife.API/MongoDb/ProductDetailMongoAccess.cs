@@ -21,8 +21,16 @@ namespace HuloToys_Service.MongoDb
         public ProductDetailMongoAccess(IConfiguration configuration)
         {
             _configuration = configuration;
-            string url = "mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "";
-            var client = new MongoClient("mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "");
+
+            string url = "mongodb://" + configuration["DataBaseConfig:MongoServer:user"] +
+      ":" + configuration["DataBaseConfig:MongoServer:pwd"] +
+      "@" + configuration["DataBaseConfig:MongoServer:Host"] +
+      ":" + configuration["DataBaseConfig:MongoServer:Port"] +
+      "/?authSource=" + configuration["DataBaseConfig:MongoServer:catalog"] + "";
+
+            var client = new MongoClient(url);
+            // string url = "mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "";
+            //  var client = new MongoClient("mongodb://" + configuration["DataBaseConfig:MongoServer:Host"] + "");
             IMongoDatabase db = client.GetDatabase(configuration["DataBaseConfig:MongoServer:catalog_core"]);
             _productDetailCollection = db.GetCollection<ProductMongoDbModel>("ProductDetail");
         }
@@ -355,7 +363,7 @@ namespace HuloToys_Service.MongoDb
 
                 // Use regex for case-insensitive partial match
                 filterDefinition &= Builders<ProductMongoDbModel>.Filter.Regex(x => x.name, new BsonRegularExpression(keyword, "i"));
-                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id , "");
+                filterDefinition &= Builders<ProductMongoDbModel>.Filter.Eq(x => x.parent_product_id, "");
                 var model = _productDetailCollection.Find(filterDefinition);
                 var result = await model.ToListAsync();
 
